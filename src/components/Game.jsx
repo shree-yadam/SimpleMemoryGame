@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./game.css";
 import Tile from "./Tile";
+
 export default function Game() {
   const [items, setItems] = useState([]);
   const [clickTracker, setClickTracker] = useState({
@@ -9,6 +10,9 @@ export default function Game() {
   });
   const [solvedCount, setSolvedCount] = useState(0);
   const [disabled, setDisabled] = useState(false);
+  const MATRIX_SIDE = 4;
+  const NUM_TILES = MATRIX_SIDE ** 2;
+  const NUM_COUNT = NUM_TILES / 2;
 
   const generateRandomNumber = (min, max) => {
     min = Math.ceil(min);
@@ -30,22 +34,22 @@ export default function Game() {
     });
   };
 
-  useEffect(() => {
+  const initializeGame = () => {
     // Assigne values from 1 through 18 to 36 cells
     let countAssigned = [];
-    for (let i = 0; i <= 18; i++) {
+    for (let i = 0; i <= NUM_COUNT; i++) {
       countAssigned.push(0);
     }
     let tempItems = [];
-    for (let i = 0; i < 36; i++) {
+    for (let i = 0; i < NUM_TILES; i++) {
       tempItems.push({ value: 0, solved: false, clicked: false });
     }
     setItems(tempItems);
 
-    for (let i = 0; i < 36; i++) {
+    for (let i = 0; i < NUM_TILES; i++) {
       let isAssigned = false;
       while (!isAssigned) {
-        const num = generateRandomNumber(1, 19);
+        const num = generateRandomNumber(1, NUM_COUNT + 1);
         if (countAssigned[num] < 2) {
           setItems((prev) => {
             const newItems = [...prev];
@@ -57,6 +61,12 @@ export default function Game() {
         }
       }
     }
+    setSolvedCount(0);
+    setDisabled(false);
+  };
+
+  useEffect(() => {
+    initializeGame();
   }, []);
 
   useEffect(() => {
@@ -98,10 +108,14 @@ export default function Game() {
   }, [clickTracker, items]);
 
   useEffect(() => {
-    if (solvedCount === 18) {
+    if (solvedCount === NUM_COUNT) {
       console.log("You WIN!!!");
     }
   }, [solvedCount]);
+
+  const handleReset = (event) => {
+    initializeGame();
+  };
 
   return (
     <>
@@ -119,7 +133,14 @@ export default function Game() {
             />
           ))}
       </div>
-      {solvedCount === 18 && <div className="success-box">YOU WIN!!!</div>}
+      {solvedCount === NUM_COUNT && (
+        <>
+          <div className="success-box">
+            YOU WIN!!!
+            <button onClick={handleReset}>RESET</button>
+          </div>
+        </>
+      )}
     </>
   );
 }
